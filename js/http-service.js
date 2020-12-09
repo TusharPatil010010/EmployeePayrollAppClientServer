@@ -1,4 +1,4 @@
-function makeServiceCall(methodType, url, callback, async = true, data = null) {
+function makeServiceCall(methodType, url, async = true, data = null) {
     return new Promise(function (resolve, reject) {
         let xhr = new XMLHttpRequest();
         xhr.onload = function () {
@@ -13,17 +13,11 @@ function makeServiceCall(methodType, url, callback, async = true, data = null) {
                 });
                 console.log("XHR Failed");
             }
-        }
-        xhr.onerror = function () {
-            reject({
-                status: this.status,
-                statusText: XMLHttpRequest.statusText
-            });
-        };
+        }  
         xhr.open(methodType, url, async);
         if (data) {
             console.log(JSON.stringify(data));
-            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("Content-type", "application/json");
             xhr.send(JSON.stringify(data));
         }
         else xhr.send();
