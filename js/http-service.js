@@ -29,4 +29,4 @@ function makeServiceCall(methodType, url, callback, async = true, data = null) {
         else xhr.send();
         console.log(methodType + " request sent to the server");
     });
-} 
+}
