@@ -13,7 +13,7 @@ function makeServiceCall(methodType, url, async = true, data = null) {
                 });
                 console.log("XHR Failed");
             }
-        }  
+        }
         xhr.open(methodType, url, async);
         if (data) {
             console.log(JSON.stringify(data));

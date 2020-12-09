@@ -48,7 +48,7 @@ const createInnerHtml = () => {
             <td>${empPayrollData._gender}</td>
             <td>${getDeptHtml(empPayrollData._department)}</td>
             <td>${empPayrollData._salary}</td>
-            <td>${stringifyDate(empPayrollData._startDate)}</td>
+            <td>${stringifyDate(new Date(empPayrollData._startDate))}</td>
             <td>
                 <img id = "${empPayrollData.id}" src = "../assets/icons/delete-black-18dp.svg" onclick = "remove(this)" alt = "delete">
                 <img id = "${empPayrollData.id}" src = "../assets/icons/create-black-18dp.svg" onclick = "update(this)" alt = "edit">
@@ -66,17 +66,28 @@ const getDeptHtml = (deptList) => {
     return deptHtml;
 }
 
-//Performing the delete operations
 const remove = (node) => {
-    console.log(employeePayrollList);
+    
     let employeePayrollData = employeePayrollList.find(empData => empData.id == node.id);
-    if(!employeePayrollData) return;
+    if( !employeePayrollData) return;
     const index = employeePayrollList.map(empData => empData.id).indexOf(employeePayrollData.id);
     employeePayrollList.splice(index, 1);
-    localStorage.setItem("EmployeePayrollList", JSON.stringify(employeePayrollList));
-    document.querySelector(".emp-count").textContent = employeePayrollList.length;
-    createInnerHtml();
-}
+    if(site_properties.use_local_storage.match("true")){
+        localStorage.setItem("EmployeePayrollList", JSON.stringify(employeePayrollList));
+        document.querySelector(".emp-count").textContent = employeePayrollList.length;
+        createInnerHtml();
+    } else {
+        const deleteURL = site_properties.server_url + employeePayrollData.id.toString();
+        makeServiceCall("DELETE", deleteURL, false)
+            .then(responseText => {
+                document.querySelector(".emp-count").textContent = employeePayrollList.length;
+                createInnerHtml();
+            })
+            .catch(error => {
+                console.log("DELETE error status : "+ JSON.stringify(error))
+            });
+    }  
+};
 
 const update = (node) =>{
     let employeePayrollData = employeePayrollList.find(empData => empData.id == node.id);
@@ -84,9 +95,3 @@ const update = (node) =>{
     localStorage.setItem('editEmp', JSON.stringify(employeePayrollData));
     window.location.replace("../pages/EmployeePayroll.html");
 }
-
-const stringifyDate = (date) => {
-    const options = {year: "numeric", month: "short", day: "numeric"};
-    const newDate = !date ? "undefined" : new Date(Date.parse(date)).toLocaleDateString("en-GB", options);
-    return newDate;
-} 

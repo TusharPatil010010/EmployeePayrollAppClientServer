@@ -1,5 +1,4 @@
 let isUpdate = true;
-const use_local_storage = "true";
 let employeePayrollObj = {};
 class EmployeePayrollData {
     id;
@@ -80,24 +79,8 @@ window.addEventListener('DOMContentLoaded', () => {
             dateError.textContent = e;
         }
     });
-    document.querySelector('.cancelButton').href = "../pages/PayrollHomePage";
     checkForUpdate();
 });
-
-const checkName = (name) =>{
-    let nameRegex = RegExp('^[A-Z]{1}[a-zA-Z\\s]{2,}$');
-    if (!nameRegex.test(name))  throw 'Name is incorrect!';
-}
-const checkStartDate = (startDate) =>{
-    let now = new Date();
-    startDate = new Date(startDate);
-    if(startDate > now) {
-        throw 'Start Date is a Future Date!';
-    }
-    var diff = Math.abs(now.getTime() - startDate.getTime());
-    if(diff / (1000 * 60 * 60 * 24) > 30)
-        throw 'Start Date is beyond 30 days!';
-}
 const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -115,7 +98,7 @@ const save = (event) => {
     }
 } 
 const setEmployeePayrollObject = () =>{
-    if(!isUpdate  && use_local_storage.match("true")){
+    if(!isUpdate  && site_properties.use_local_storage.match("true")){
         employeePayrollObj.id = createNewEmployeeId();
     }
     employeePayrollObj._name = getInputValueById('#name');
@@ -133,10 +116,12 @@ const createOrUpdateEmployeePayroll = () => {
 
     let postURL = site_properties.server_url;
     let methodCall = "POST";
+    //Update method : UC7
     if(isUpdate){
         methodCall = "PUT";
-        postURL = postURL + empPayrollObj.id.toString();
+        postURL = postURL + employeePayrollObj.id.toString();
     }
+    //Add method: UC5
     makeServiceCall(methodCall, postURL, true, employeePayrollObj)
         .then(responseText => {
             resetForm();
@@ -154,7 +139,6 @@ function createAndUpdateStorage(){
 
     if(employeePayrollList){
         let employeePayrollData = employeePayrollList.find(empData => empData.id == employeePayrollObj.id);
-
         if(!employeePayrollData){
             employeePayrollList.push(employeePayrollObj);
         }else{
@@ -254,7 +238,7 @@ const setForm = () =>{
     setValue('#salary', employeePayrollObj._salary);
     setTextValue('.salary-output', employeePayrollObj._salary);
     setValue('#notes', employeePayrollObj._note);
-    let date = stringifyDate(employeePayrollObj._startDate).split(" ");
+    let date = stringifyDate(new Date(employeePayrollObj._startDate)).split(" ");
     console.log("String date is: "+date);
     setValue('#day', date[0]);
     setValue('#month', date[1]);
@@ -273,9 +257,3 @@ const setSelectedValues = (propertyValue, value)=>{
         }
     });
 }
-
-const stringifyDate = (date) => {
-    const options = {year: "numeric", month: "short", day: "numeric"};
-    const newDate = !date ? "undefined" : new Date(Date.parse(date)).toLocaleDateString("en-GB", options);
-    return newDate;
-} 
